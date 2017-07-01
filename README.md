@@ -1,3 +1,5 @@
+[Based on Real Time Risk](https://github.com/davidMcneil/Real-Time-Risk)
+
 ![Alt text](screenshot.jpg)
 
 # To Start Game:
@@ -10,14 +12,14 @@
 - "cd directory"
 
 Start a server:
- 
+
 - run "python server.py arg1 arg2"
   - arg1 = port number
   - arg2 = number of players 1-4
 - ex.) "python server.py 5555 3" starts game on port 5555 with 3 players
 
 Start specified number of clients one for each player:
- 
+
 - run "python client.py arg1 arg2"
   - arg1 = port number same as server
   - arg2 = host machines IP address
@@ -56,4 +58,3 @@ Connect clients to server
 - Number keys change quantity of armies moved
 
 *Note: The game quickly digresses into manical clicking*
-
