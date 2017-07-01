@@ -1,4 +1,4 @@
-[Based on Real Time Risk](https://github.com/davidMcneil/Real-Time-Risk)
+Based on [Real Time Risk by davidMcneil](https://github.com/davidMcneil/Real-Time-Risk)
 
 ![Alt text](screenshot.jpg)
 
