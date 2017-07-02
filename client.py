@@ -106,18 +106,6 @@ def main(screen):
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-#        if event.key == K_F5:
-#          fullscreen = pygame.FULLSCREEN
-#          screen = pygame.display.set_mode((width, height), fullscreen)
-#          bg_image= load_image(filepath + "classic_board.jpg")
-#          screen.blit(bg_image, (0, 0))
-#          pygame.display.flip()
-#        for num in range(1, 10):
-#          key = 'K_' + str(num)
-#          if event.key == eval(key):
-#            player.troops = num
-#        if event.key == K_0:
-#          player.troops = 10
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for territory in territories:
                     territory.move()
