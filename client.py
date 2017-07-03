@@ -96,7 +96,7 @@ def main(screen):
     running = True
     # Main loop
     while running:
-        clock.tick(30)
+        clock.tick(90)
         process_command()
         for event in pygame.event.get():
             if event.type == QUIT:

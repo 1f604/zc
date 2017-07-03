@@ -18,6 +18,13 @@ filepath = ""
 
 input_queue = Queue.Queue()
 output_queue = Queue.Queue()
+owner_color = {
+    0: (0, 0, 0),
+    1: (250, 0, 0),
+    2: (0, 250, 0),
+    3: (0, 0, 250),
+    4: (250, 0, 250)
+}
 
 
 # Media handeling functions
@@ -108,14 +115,8 @@ class territory(pygame.sprite.Sprite):
         self.rect.center = (self.x, self.y)
         self.name = name
         self.owner = owner
-        if self.owner == 1:
-            self.image.fill((250, 0, 0))
-        if self.owner == 2:
-            self.image.fill((0, 250, 0))
-        if self.owner == 3:
-            self.image.fill((0, 0, 250))
-        if self.owner == 4:
-            self.image.fill((250, 0, 250))
+        self.selected = False
+        self.image.fill(owner_color[self.owner])
         self.armies = armies
         self.army = army(self.x, self.y, self.armies)
         sprites.move_to_front(self.army)
@@ -125,25 +126,33 @@ class territory(pygame.sprite.Sprite):
         # Move armies
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             buttons = pygame.mouse.get_pressed()
-            if buttons[2]:
-                    player.destination_country = self.name
-                    player.build_command()
-                    output_queue.put(player.get_command())
             if buttons[0]:
                     player.source_country = self.name
                     for t in territories:
                         t.army.color = (0, 0, 0)
+                        t.selected = False
+                        t.set_color()
+                    self.selected = True
                     self.army.color = (255, 255, 255)
+                    self.draw_border()
+                    # self.draw_rect(owner_color[self.owner], (0, 0, 0),
+                    #                self.rect)
+            if buttons[2]:
+                    player.destination_country = self.name
+                    player.build_command()
+                    output_queue.put(player.get_command())
+
+    def draw_border(self):
+        rect = self.image.get_rect()
+        self.image.fill((255, 255, 255), rect)
+        self.image.fill(owner_color[self.owner],
+                        rect.inflate(-4, -4))
 
     def set_color(self):
-        if self.owner == 1:
-            self.image.fill((250, 0, 0))
-        if self.owner == 2:
-            self.image.fill((0, 250, 0))
-        if self.owner == 3:
-            self.image.fill((0, 0, 250))
-        if self.owner == 4:
-            self.image.fill((250, 0, 250))
+        if self.selected:
+            self.draw_border()
+        else:
+            self.image.fill(owner_color[self.owner])
 
     def set_fields(self):
         self.army.set_troops(self.armies)
