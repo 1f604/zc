@@ -14,6 +14,7 @@ pygame.init()
 font = pygame.font.Font(None, 36)
 text = font.render("Game over: A player has disconnected", True, (255, 0, 250))
 end = False
+RED = (255, 0, 0)
 
 
 def create_connection():  # Establish connection to server
@@ -95,11 +96,14 @@ def main(screen):
     ###
     clock = pygame.time.Clock()
     running = True
+    draw_new_selection_box = False
+    selection_completed = False
     # Main loop
     while running:
         clock.tick(FPS)
         process_command()
         for event in pygame.event.get():
+            buttons = pygame.mouse.get_pressed()
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -108,20 +112,28 @@ def main(screen):
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN \
-                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
+                    and buttons[0]:  # left click without shift
                 for t in territories:
                     t.selected = False
                     t.move()
+                draw_new_selection_box = True
+                leftclick_down_location = pygame.mouse.get_pos()
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                print "shift clicked"
+                # shift right click select toggle
                 for t in territories:
                     if t.rect.collidepoint(pygame.mouse.get_pos()):
-                        buttons = pygame.mouse.get_pressed()
                         if buttons[2]:
                             if pygame.key.get_mods() & pygame.KMOD_SHIFT:
                                 t.selected = not t.selected
+            if event.type == pygame.MOUSEBUTTONUP \
+                    and not buttons[0]:
+                draw_new_selection_box = False
+                selection_completed = True
+                leftclick_up_location = pygame.mouse.get_pos()
         if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+            # shift left mousebutton drag select
             for t in territories:
                 if t.rect.collidepoint(pygame.mouse.get_pos()):
                     buttons = pygame.mouse.get_pressed()
@@ -129,13 +141,34 @@ def main(screen):
                         t.selected = True
                         t.army.color = (255, 255, 255)
                         t.draw_border()
+        # use event variables to change variables
+        cur_mouse_loc = pygame.mouse.get_pos()
+        if draw_new_selection_box:
+            selection_box_x = cur_mouse_loc[0] - leftclick_down_location[0]
+            selection_box_y = cur_mouse_loc[1] - leftclick_down_location[1]
+            selection_box = pygame.Rect((leftclick_down_location),
+                                        (selection_box_x, selection_box_y))
+            print "selection box:", selection_box_x, selection_box_y
+        elif selection_completed:
+            completed_selection_box_x = leftclick_up_location[0]\
+                                        - leftclick_down_location[0]
+            completed_selection_box_y = leftclick_up_location[1]\
+                - leftclick_down_location[1]
+            completed_selection_box = pygame.Rect((leftclick_down_location),
+                                                  (completed_selection_box_x,
+                                                  completed_selection_box_y))
+
         if not end:
             sprites.clear(screen, bg_image)
             time = pygame.time.get_ticks()
             sprites.update(time)
             info.update(time)
             rectlist = sprites.draw(screen)
+            # draw selection box
             pygame.display.update(rectlist)
+            if draw_new_selection_box:
+                sel = pygame.draw.rect(screen, RED, selection_box, 2)
+                pygame.display.update(sel)
         else:
             screen.blit(text, ((width-text.get_width())//2,
                         height-text.get_height()))
