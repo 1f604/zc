@@ -130,13 +130,11 @@ class territory(pygame.sprite.Sprite):
                     player.source_country = self.name
                     for t in territories:
                         t.army.color = (0, 0, 0)
-                        t.selected = False
+                        t.selected = False  # this might be a bit redundant
                         t.set_color()
                     self.selected = True
                     self.army.color = (255, 255, 255)
                     self.draw_border()
-                    # self.draw_rect(owner_color[self.owner], (0, 0, 0),
-                    #                self.rect)
             if buttons[2]:
                     player.destination_country = self.name
                     player.build_command()

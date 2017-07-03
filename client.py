@@ -9,6 +9,7 @@ import socket
 import sys
 import message
 
+FPS = 90
 pygame.init()
 font = pygame.font.Font(None, 36)
 text = font.render("Game over: A player has disconnected", True, (255, 0, 250))
@@ -96,7 +97,7 @@ def main(screen):
     running = True
     # Main loop
     while running:
-        clock.tick(90)
+        clock.tick(FPS)
         process_command()
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -107,8 +108,16 @@ def main(screen):
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                for territory in territories:
-                    territory.move()
+                for t in territories:
+                    t.selected = False
+                    t.move()
+        for t in territories:
+            if t.rect.collidepoint(pygame.mouse.get_pos()):
+                buttons = pygame.mouse.get_pressed()
+                if buttons[0]:
+                    t.selected = True
+                    t.army.color = (255, 255, 255)
+                    t.draw_border()
         if not end:
             sprites.clear(screen, bg_image)
             time = pygame.time.get_ticks()
