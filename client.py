@@ -172,6 +172,11 @@ def main(screen):
             # draw selection box
             if draw_new_selection_box:
                 pygame.draw.rect(screen, GREEN, selection_box, 1)
+                for t in territories:
+                    if selection_box.colliderect(t.rect):
+                        t.selected = True
+                    else:
+                        t.selected = False
             pygame.display.update()
         else:
             screen.blit(text, ((width-text.get_width())//2,
