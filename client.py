@@ -123,14 +123,6 @@ def main(screen):
                     t.move()
                 draw_new_selection_box = True
                 leftclick_down_location = pygame.mouse.get_pos()
-            if event.type == pygame.MOUSEBUTTONDOWN \
-                    and pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                # shift right click select toggle
-                for t in territories:
-                    if t.rect.collidepoint(pygame.mouse.get_pos()):
-                        if buttons[2]:
-                            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                                t.selected = not t.selected
             if event.type == pygame.MOUSEBUTTONUP \
                     and not buttons[0]:
                 draw_new_selection_box = False
@@ -144,7 +136,10 @@ def main(screen):
                     if buttons[0]:
                         t.selected = True
                         t.army.color = (255, 255, 255)
-                        t.draw_border()
+                    if buttons[2]:
+                        t.selected = False
+                        t.army.color = (0, 0, 0)
+                    t.set_color()
         # use event variables to change variables
         cur_mouse_loc = pygame.mouse.get_pos()
         if draw_new_selection_box:
