@@ -172,6 +172,7 @@ def main(screen):
             # draw selection box
             if draw_new_selection_box:
                 pygame.draw.rect(screen, GREEN, selection_box, 1)
+                selection_box.normalize()
                 for t in territories:
                     if selection_box.colliderect(t.rect):
                         t.selected = True
