@@ -121,13 +121,14 @@ def main(screen):
                         if buttons[2]:
                             if pygame.key.get_mods() & pygame.KMOD_SHIFT:
                                 t.selected = not t.selected
-        for t in territories:
-            if t.rect.collidepoint(pygame.mouse.get_pos()):
-                buttons = pygame.mouse.get_pressed()
-                if buttons[0]:
-                    t.selected = True
-                    t.army.color = (255, 255, 255)
-                    t.draw_border()
+        if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+            for t in territories:
+                if t.rect.collidepoint(pygame.mouse.get_pos()):
+                    buttons = pygame.mouse.get_pressed()
+                    if buttons[0]:
+                        t.selected = True
+                        t.army.color = (255, 255, 255)
+                        t.draw_border()
         if not end:
             sprites.clear(screen, bg_image)
             time = pygame.time.get_ticks()
