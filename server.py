@@ -6,6 +6,7 @@ import time
 import random
 import math
 import message
+import collections
 
 refresh_rate = 0.1  # seconds per refresh
 running = True
@@ -17,15 +18,33 @@ def log(location, message):
     pass
 
 
+def reachable(a, b, owner):
+    # breadth first search to determine if territories a and b are connected
+    tovisit = collections.deque([a])
+    visited = set()
+    while tovisit:
+        t = tovisit.popleft()
+        visited.add(t)
+        for n in connection_map[t]:
+            if n == b:
+                return True
+            if n not in visited and n not in tovisit \
+                    and territory_reference[n].owner == owner:
+                tovisit.append(n)
+    return False
+
+
 # Functions for processing messages from clients
 # and putting the new world state on each output queue
-def territory_connected(t_a, t_b):
+def can_move(source, destination):
+    # Checks to see if two territories are both under same player control
+    if reachable(source.name, destination.name, source.owner):
+        return True
     # Checks to see if two territories are connected
-    for c in connection_map[t_a]:
-        if c == t_b:
+    for c in connection_map[source.name]:
+        if c == destination.name:
             return True
-    else:
-        return False
+    return False
 
 
 def battle(a_troops, d_troops):
@@ -80,7 +99,7 @@ def process_command(command):
         source = territory_reference[command[1]]
         destination = territory_reference[command[2]]
         attacking_troops = command[3]
-        if territory_connected(source.name, destination.name):
+        if can_move(source, destination):
             if (source.owner in quota
                     and quota[source.owner] >= attacking_troops):
                 if attacking_troops > source.armies:
