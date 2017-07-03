@@ -14,7 +14,11 @@ pygame.init()
 font = pygame.font.Font(None, 36)
 text = font.render("Game over: A player has disconnected", True, (255, 0, 250))
 end = False
-RED = (255, 0, 0)
+BLACK = (0,   0,   0)
+WHITE = (255, 255, 255)
+BLUE = (0,   0, 255)
+GREEN = (0, 255,   0)
+RED = (255,   0,   0)
 
 
 def create_connection():  # Establish connection to server
@@ -163,12 +167,12 @@ def main(screen):
             time = pygame.time.get_ticks()
             sprites.update(time)
             info.update(time)
-            rectlist = sprites.draw(screen)
+            screen.blit(bg_image, (0, 0))
+            sprites.draw(screen)
             # draw selection box
-            pygame.display.update(rectlist)
             if draw_new_selection_box:
-                sel = pygame.draw.rect(screen, RED, selection_box, 2)
-                pygame.display.update(sel)
+                pygame.draw.rect(screen, GREEN, selection_box, 1)
+            pygame.display.update()
         else:
             screen.blit(text, ((width-text.get_width())//2,
                         height-text.get_height()))
