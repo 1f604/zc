@@ -112,6 +112,15 @@ def main(screen):
                 for t in territories:
                     t.selected = False
                     t.move()
+            if event.type == pygame.MOUSEBUTTONDOWN \
+                    and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                print "shift clicked"
+                for t in territories:
+                    if t.rect.collidepoint(pygame.mouse.get_pos()):
+                        buttons = pygame.mouse.get_pressed()
+                        if buttons[2]:
+                            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                                t.selected = not t.selected
         for t in territories:
             if t.rect.collidepoint(pygame.mouse.get_pos()):
                 buttons = pygame.mouse.get_pressed()
