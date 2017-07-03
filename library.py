@@ -125,11 +125,11 @@ class territory(pygame.sprite.Sprite):
         # Move armies
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             buttons = pygame.mouse.get_pressed()
-            if buttons[0]:
+            if buttons[2]:
                     player.destination_country = self.name
                     player.build_command()
                     output_queue.put(player.get_command())
-            if buttons[2]:
+            if buttons[0]:
                     player.source_country = self.name
                     for t in territories:
                         t.army.color = (0, 0, 0)
