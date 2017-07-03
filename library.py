@@ -127,6 +127,13 @@ class territory(pygame.sprite.Sprite):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             buttons = pygame.mouse.get_pressed()
             if buttons[0]:
+                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    print "shift clicked"
+                    player.source_country = self.name
+                    self.selected = True
+                    self.army.color = (255, 255, 255)
+                    self.draw_border()
+                else:
                     player.source_country = self.name
                     for t in territories:
                         t.army.color = (0, 0, 0)

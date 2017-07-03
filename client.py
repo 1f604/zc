@@ -107,7 +107,8 @@ def main(screen):
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN \
+                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT:
                 for t in territories:
                     t.selected = False
                     t.move()
