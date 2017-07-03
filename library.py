@@ -148,8 +148,10 @@ class territory(pygame.sprite.Sprite):
 
     def set_color(self):
         if self.selected:
+            self.army.color = (255, 255, 255)
             self.draw_border()
         else:
+            self.army.color = (0, 0, 0)
             self.image.fill(owner_color[self.owner])
 
     def set_fields(self):
