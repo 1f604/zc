@@ -90,9 +90,11 @@ def process_command():
                 end = True
 
 
-def select(t):
-    t.selected = True
-    selecteds.add(t)
+def select(t, own_select):
+    if (own_select and t.owner == player.ID) or \
+       (not own_select and t.owner != player.ID):
+            t.selected = True
+            selecteds.add(t)
 
 
 def deselect(t):
@@ -109,6 +111,7 @@ def main(screen):
     clock = pygame.time.Clock()
     running = True
     draw_new_selection_box = False
+    own_select = True
     # Main loop
     while running:
         clock.tick(FPS)
@@ -124,9 +127,20 @@ def main(screen):
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
-                    and buttons[0]:  # left click without shift, start box
+                    and buttons[0] \
+                    and not pygame.key.get_mods() & pygame.KMOD_CTRL:
+                    # left click without shift and alt, start box
                 draw_new_selection_box = True
                 leftclick_down_location = pygame.mouse.get_pos()
+                own_select = True
+            if event.type == pygame.MOUSEBUTTONDOWN \
+                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
+                    and buttons[0] \
+                    and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                    # left click without shift but with alt, start box
+                draw_new_selection_box = True
+                leftclick_down_location = pygame.mouse.get_pos()
+                own_select = False
 
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
@@ -148,7 +162,7 @@ def main(screen):
                 if t.rect.collidepoint(pygame.mouse.get_pos()):
                     buttons = pygame.mouse.get_pressed()
                     if buttons[0]:
-                        select(t)
+                        select(t, own_select)
                         t.army.color = (255, 255, 255)
                     if buttons[2]:
                         deselect(t)
@@ -175,10 +189,9 @@ def main(screen):
                 pygame.draw.rect(screen, colors.GREEN, selection_box, 1)
                 selection_box.normalize()
                 for t in territories:
+                    deselect(t)
                     if selection_box.colliderect(t.rect):
-                        select(t)
-                    else:
-                        deselect(t)
+                        select(t, own_select)
             pygame.display.update()
         else:
             screen.blit(text, ((width-text.get_width())//2,
