@@ -30,8 +30,12 @@ Start specified number of clients one for each player:
 *Note: Game only starts after all clients have connected*
 
 # Game Play
-- Right click to select country to move armies from
-- Left click to move armies into adjacent country
-- Number keys change quantity of armies moved
+- Left click to select country to move armies from
+- Right click to move armies into target country
+- Left click and drag for selection box (only selects own countries by default)
+- Shift-left click and drag for freeform selection
+- Shift-right click and drag for freeform deselection
+- Ctrl-backquote (the \` symbol) to switch between own-territory select and enemy territory select modes
+x- Number keys change quantity of armies moved
 
 *Note: The game quickly digresses into maniacal clicking*
