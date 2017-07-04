@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import QUIT, KEYDOWN, K_ESCAPE
+from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_BACKQUOTE
 from library import (territories, input_queue, output_queue, player,
                      load_image, filepath, sprites, info, screen, width,
                      height, selecteds)
@@ -37,7 +37,6 @@ class receive_commands(threading.Thread):
         while True:
                 command = message.recv_message(self.socket)
                 if command != '':
-                    print "command:", command, type(command)
                     command = json.loads(command)
                     input_queue.put(command)
 
@@ -118,6 +117,8 @@ def main(screen):
         process_command()
         for event in pygame.event.get():
             buttons = pygame.mouse.get_pressed()
+            keys = pygame.key.get_pressed()
+            mods = pygame.key.get_mods()
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -126,21 +127,15 @@ def main(screen):
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN \
-                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
-                    and buttons[0] \
-                    and not pygame.key.get_mods() & pygame.KMOD_CTRL:
-                    # left click without shift and alt, start box
+                    and not mods & pygame.KMOD_SHIFT \
+                    and buttons[0]:
+                    # left click without shift, start box
                 draw_new_selection_box = True
                 leftclick_down_location = pygame.mouse.get_pos()
-                own_select = True
-            if event.type == pygame.MOUSEBUTTONDOWN \
-                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
-                    and buttons[0] \
-                    and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                    # left click without shift but with alt, start box
-                draw_new_selection_box = True
-                leftclick_down_location = pygame.mouse.get_pos()
-                own_select = False
+
+            if keys[K_BACKQUOTE] and mods & pygame.KMOD_CTRL:
+                own_select = not own_select
+                print "territory select inverted"
 
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
