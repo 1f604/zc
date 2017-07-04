@@ -8,7 +8,7 @@ import threading
 import socket
 import sys
 import message
-import pickle
+import json
 
 FPS = 90
 pygame.init()
@@ -32,6 +32,18 @@ def create_connection():  # Establish connection to server
     return s
 
 
+def byteify(input):
+    if isinstance(input, dict):
+        return {byteify(key): byteify(value)
+                for key, value in input.iteritems()}
+    elif isinstance(input, list):
+        return [byteify(element) for element in input]
+    elif isinstance(input, unicode):
+        return input.encode('utf-8')
+    else:
+        return input
+
+
 class receive_commands(threading.Thread):
     def __init__(self, socket):
         threading.Thread.__init__(self)
@@ -41,7 +53,8 @@ class receive_commands(threading.Thread):
         while True:
                 command = message.recv_message(self.socket)
                 if command != '':
-                    command = eval(command)
+                    print "command:", command, type(command)
+                    command = json.loads(command)
                     input_queue.put(command)
 
 
@@ -53,7 +66,7 @@ class send_commands(threading.Thread):
     def run(self):
         while True:
                 command = output_queue.get()
-                data_string = pickle.dumps(command)
+                data_string = json.dumps(command)
                 message.send_message(self.socket, data_string)
 
 

@@ -7,7 +7,7 @@ import random
 import math
 import message
 import collections
-import pickle
+import json
 
 refresh_rate = 0.1  # seconds per refresh
 running = True
@@ -199,7 +199,7 @@ class receive_commands(threading.Thread):
             command = message.recv_message(self.socket)
             if command != '':
                 log("receive_commands", command)
-                command = pickle.loads(command)
+                command = json.loads(command)
                 self.input_queue.put(command)
 
 
@@ -220,7 +220,7 @@ class send_commands(threading.Thread):
                 else:
                     command[1] = 0
             log("send_commands", command)
-            command = str(command)
+            command = json.dumps(command)
             try:
                     message.send_message(self.socket, command)
             except Exception as e:
@@ -236,7 +236,7 @@ def add_client(l, input_queue, client_num):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     global socks
     socks.append(sock)
-    first_command = str(['ID', client_num])
+    first_command = json.dumps(['ID', client_num])
     message.send_message(sock, first_command)
     log("add_client", "starting receiver")
     t1 = receive_commands(input_queue, sock)
@@ -346,7 +346,7 @@ def start_game(input_queue, queues):
     print("TIME TO END!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     for sock in socks:
         try:
-            final_cmd = str(['end', 0])
+            final_cmd = json.dumps(['end', 0])
             message.send_message(sock, final_cmd)
             print("send final cmd # # # # # # # # ")
             sock.close()
