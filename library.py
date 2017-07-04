@@ -13,6 +13,7 @@ screen.fill((0, 0, 0))
 # Sprite groups
 sprites = pygame.sprite.LayeredUpdates()
 territories = pygame.sprite.Group()
+selecteds = set()
 
 filepath = ""
 
@@ -62,15 +63,13 @@ class example(pygame.sprite.Sprite):
 class player():
     def __init__(self):
         self.source_country = None
-        self.troops = 5
         self.destination_country = None
         self.command = []
         self.ID = None
         self.quota = 0
 
-    def build_command(self):
-        self.command = ["move", self.source_country, self.destination_country,
-                        self.troops]
+    def build_command(self, source, destination, troops=5):
+        self.command = ["move", source, destination, troops]
 
     def get_command(self):
         return self.command
@@ -122,29 +121,15 @@ class territory(pygame.sprite.Sprite):
         sprites.move_to_front(self.army)
         self.update_count = 0
 
-    def move(self):
+    def move(self, target):
         # Move armies
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if target.rect.collidepoint(pygame.mouse.get_pos()):
             buttons = pygame.mouse.get_pressed()
-            if buttons[0]:
-                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                    player.source_country = self.name
-                    self.selected = True
-                    self.army.color = (255, 255, 255)
-                    self.draw_border()
-                else:
-                    player.source_country = self.name
-                    for t in territories:
-                        t.army.color = (0, 0, 0)
-                        t.selected = False  # this might be a bit redundant
-                        t.set_color()
-                    self.selected = True
-                    self.army.color = (255, 255, 255)
-                    self.draw_border()
             if buttons[2]:
-                    player.destination_country = self.name
-                    player.build_command()
+                    print "moving!"
+                    player.build_command(self.name, target.name)
                     output_queue.put(player.get_command())
+                    print output_queue
 
     def draw_border(self):
         rect = self.image.get_rect()

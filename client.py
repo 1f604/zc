@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE
 from library import (territories, input_queue, output_queue, player,
                      load_image, filepath, sprites, info, screen, width,
-                     height)
+                     height, selecteds)
 # import thread
 import threading
 import socket
@@ -92,6 +92,16 @@ def process_command():
                 end = True
 
 
+def select(t):
+    t.selected = True
+    selecteds.add(t)
+
+
+def deselect(t):
+    t.selected = False
+    selecteds.discard(t)
+
+
 def main(screen):
     # Create background
     bg_image = load_image(filepath + "classic_board.jpg")
@@ -117,27 +127,34 @@ def main(screen):
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
-                    and buttons[0]:  # left click without shift
-                for t in territories:
-                    t.selected = False
-                    t.move()
+                    and buttons[0]:  # left click without shift, start box
                 draw_new_selection_box = True
                 leftclick_down_location = pygame.mouse.get_pos()
+
+            if event.type == pygame.MOUSEBUTTONDOWN \
+                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
+                    and buttons[2]:  # right click without shift, move armies
+                for t in territories:
+                    if t.rect.collidepoint(pygame.mouse.get_pos()):
+                        print "right clicked"
+                        # move armies from selected zones ot target
+                        for s in selecteds:
+                            s.move(t)
+
             if event.type == pygame.MOUSEBUTTONUP \
                     and not buttons[0]:
                 draw_new_selection_box = False
-                selection_completed = True
-                leftclick_up_location = pygame.mouse.get_pos()
+
         if pygame.key.get_mods() & pygame.KMOD_SHIFT:
             # shift left mousebutton drag select
             for t in territories:
                 if t.rect.collidepoint(pygame.mouse.get_pos()):
                     buttons = pygame.mouse.get_pressed()
                     if buttons[0]:
-                        t.selected = True
+                        select(t)
                         t.army.color = (255, 255, 255)
                     if buttons[2]:
-                        t.selected = False
+                        deselect(t)
                         t.army.color = (0, 0, 0)
                     t.set_color()
         # use event variables to change variables
@@ -148,14 +165,6 @@ def main(screen):
             selection_box = pygame.Rect((leftclick_down_location),
                                         (selection_box_x, selection_box_y))
             print "selection box:", selection_box_x, selection_box_y
-        elif selection_completed:
-            completed_selection_box_x = leftclick_up_location[0]\
-                                        - leftclick_down_location[0]
-            completed_selection_box_y = leftclick_up_location[1]\
-                - leftclick_down_location[1]
-            completed_selection_box = pygame.Rect((leftclick_down_location),
-                                                  (completed_selection_box_x,
-                                                  completed_selection_box_y))
 
         if not end:
             sprites.clear(screen, bg_image)
@@ -170,9 +179,9 @@ def main(screen):
                 selection_box.normalize()
                 for t in territories:
                     if selection_box.colliderect(t.rect):
-                        t.selected = True
+                        select(t)
                     else:
-                        t.selected = False
+                        deselect(t)
             pygame.display.update()
         else:
             screen.blit(text, ((width-text.get_width())//2,
