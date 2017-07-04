@@ -35,10 +35,10 @@ class receive_commands(threading.Thread):
 
     def run(self):
         while True:
-                command = message.recv_message(self.socket)
-                if command != '':
-                    command = json.loads(command)
-                    input_queue.put(command)
+            command = message.recv_message(self.socket)
+            if command != '':
+                command = json.loads(command)
+                input_queue.put(command)
 
 
 class send_commands(threading.Thread):
@@ -142,7 +142,6 @@ def main(screen):
                     and buttons[2]:  # right click without shift, move armies
                 for t in territories:
                     if t.rect.collidepoint(pygame.mouse.get_pos()):
-                        print "right clicked"
                         # move armies from selected zones ot target
                         for s in selecteds:
                             s.move(t)
@@ -170,7 +169,6 @@ def main(screen):
             selection_box_y = cur_mouse_loc[1] - leftclick_down_location[1]
             selection_box = pygame.Rect((leftclick_down_location),
                                         (selection_box_x, selection_box_y))
-            print "selection box:", selection_box_x, selection_box_y
 
         if not end:
             sprites.clear(screen, bg_image)

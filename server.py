@@ -49,24 +49,14 @@ def can_move(src, dest):
     return False
 
 
-def battle(a_troops, d_troops):
-    # Battle algorithum
-    a_troops = a_troops
-    d_troops = d_troops
-    while a_troops > 0 and d_troops > 0:
-        num = random.randint(1, 100)
-        if num <= 30:
-            d_troops -= 2
-        if num > 30 and num <= 50:
-            a_troops -= 2
-        if num > 50:
-            a_troops -= 1
-            d_troops -= 1
-        if a_troops < 0:
-            a_troops = 0
-        if d_troops < 0:
-            d_troops = 0
-    return a_troops, d_troops
+def battle(a_owner, d_owner, a_troops, d_troops):
+    # Battle algorithm
+    if a_troops > d_troops:
+        winner = a_owner
+    else:
+        winner = d_owner
+    troops = abs(a_troops - d_troops)
+    return winner, troops
 
 
 def get_army_totals():
@@ -83,7 +73,7 @@ def get_army_totals():
 def process_command(command):
     # Executes all commands sent to server
     # (["move", src, dest, armies], and ["add_troops"])
-    log("process command", command)
+    # log("process command", command)
     if command[0] == "add_troops":
         log("process_command", "adding troops")
         for territory in territories:
@@ -96,36 +86,20 @@ def process_command(command):
             else:
                 q = 0
             quota[k] = min(q + 3 + army_count[k] / 50, army_count[k], 100)
-        print quota
+        # print quota
     elif command[0] == "move":
         # When a move command is issued, create an expedition from src to dest,
         # and check every main loop iteration whether the expedition arrived.
         src = territory_reference[command[1]]
         dest = territory_reference[command[2]]
-        dist = math.hypot(src.x-dest.x, src.y-dest.y)
-        exp = Expedition(src, dest, dist)
-        expeditions.append(exp)
-        attacking_troops = command[3]
         if can_move(src, dest):
-            if (src.owner in quota
-                    and quota[src.owner] >= attacking_troops):
-                if attacking_troops > src.armies:
-                    attacking_troops = src.armies
-                quota[src.owner] = quota[src.owner] - attacking_troops
-                if src.owner == dest.owner:
-                    src.armies -= attacking_troops
-                    dest.armies += attacking_troops
-                elif src.owner != dest.owner:
-                    src_troops, dest_troops = battle(
-                            attacking_troops, dest.armies)
-                    src.armies -= attacking_troops - src_troops
-                    dest.armies = dest_troops
-                    if dest.armies == 0 and attacking_troops > 0:
-                        dest.owner = src.owner
-                        dest.armies = src_troops
-                        src.armies -= src_troops
-            else:
-                print "rejected", quota
+            attacking_troops = command[3]
+            if attacking_troops > src.armies:
+                attacking_troops = src.armies
+            dist = math.hypot(src.x-dest.x, src.y-dest.y)*0.02 + time.time()
+            src.armies -= attacking_troops
+            exp = Expedition(src, dest, attacking_troops, dist)
+            expeditions.append(exp)
 
 
 def get_commands(input_queue):
@@ -189,7 +163,7 @@ def create_connection(s):
 
 
 def check_cmd_valid(command, ID):
-    print "received command:", command
+    # print "received command:", command
     if command[0] == "move":
         src = territory_reference[command[1]]
         if src.owner == ID:
@@ -210,7 +184,7 @@ class receive_commands(threading.Thread):
         while True:
             command = message.recv_message(self.socket)
             if command != '':
-                log("receive_commands", command)
+                # log("receive_commands", command)
                 command = json.loads(command)
                 if check_cmd_valid(command, self.ID):
                     self.input_queue.put(command)
@@ -232,7 +206,7 @@ class send_commands(threading.Thread):
                     command[1] = command[1][self.ID]
                 else:
                     command[1] = 0
-            log("send_commands", command)
+            # log("send_commands", command)
             command = json.dumps(command)
             try:
                     message.send_message(self.socket, command)
@@ -290,21 +264,36 @@ class update_quota(threading.Thread):
     def run(self):
         while 1:
             time.sleep(refresh_rate)
-            log("update_quota", "generating command")
+            # log("update_quota", "generating command")
             self.input_queue.put(["update_quota"])
 
 
 class Expedition():
-    def __init__(self, src, dest, delay):
+    def __init__(self, src, dest, troops, arrival_time):
         self.last = time.time()
-        self.delay = delay
+        self.arrival_time = arrival_time
         self.src = src
         self.dest = dest
+        self.troops = troops
+        print "expedition created from", src.name, "to", dest.name, "with", \
+              troops, "troops", "arriving at", arrival_time
 
     def arrived(self):
         now = time.time()
-        if now - self.last >= self.delay:
+        if now >= self.arrival_time:
+            print "expedition from", self.src.name, "to", \
+                  self.dest.name, "arrived at", now
             # do battle, set new army value on destination territory
+            src = self.src
+            dest = self.dest
+            attacking_troops = self.troops
+            if src.owner == dest.owner:
+                dest.armies += attacking_troops
+            elif src.owner != dest.owner:
+                winner, troops = battle(src.owner, dest.owner,
+                                        attacking_troops, dest.armies)
+                dest.owner = winner
+                dest.armies = troops
             return True
         return False
 

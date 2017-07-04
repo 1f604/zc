@@ -127,7 +127,6 @@ class territory(pygame.sprite.Sprite):
         print "moving!"
         player.build_command(self.name, target.name)
         output_queue.put(player.get_command())
-        print output_queue
 
     def draw_border(self):
         rect = self.image.get_rect()
