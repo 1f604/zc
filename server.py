@@ -188,11 +188,23 @@ def create_connection(s):
     return sock
 
 
+def check_cmd_valid(command, ID):
+    print "received command:", command
+    if command[0] == "move":
+        src = territory_reference[command[1]]
+        if src.owner == ID:
+            return True
+        else:
+            return False
+    return False
+
+
 class receive_commands(threading.Thread):
-    def __init__(self, input_queue, socket):
+    def __init__(self, input_queue, socket, ID):
         threading.Thread.__init__(self)
         self.socket = socket
         self.input_queue = input_queue
+        self.ID = ID
 
     def run(self):
         while True:
@@ -200,7 +212,8 @@ class receive_commands(threading.Thread):
             if command != '':
                 log("receive_commands", command)
                 command = json.loads(command)
-                self.input_queue.put(command)
+                if check_cmd_valid(command, self.ID):
+                    self.input_queue.put(command)
 
 
 class send_commands(threading.Thread):
@@ -239,7 +252,7 @@ def add_client(l, input_queue, client_num):
     first_command = json.dumps(['ID', client_num])
     message.send_message(sock, first_command)
     log("add_client", "starting receiver")
-    t1 = receive_commands(input_queue, sock)
+    t1 = receive_commands(input_queue, sock, client_num)
     t1.daemon = True
     t1.start()
     output_queue = Queue.Queue()

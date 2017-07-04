@@ -1,6 +1,7 @@
 import pygame
 import Queue
 import os
+import colors
 pygame.init()
 
 # creates screeen#
@@ -130,7 +131,11 @@ class territory(pygame.sprite.Sprite):
 
     def draw_border(self):
         rect = self.image.get_rect()
-        self.image.fill((255, 255, 255), rect)
+        if self.owner == player.ID:
+            selection_color = colors.OWN_SELECTED
+        else:
+            selection_color = colors.ENEMY_SELECTED
+        self.image.fill(selection_color, rect)
         self.image.fill(owner_color[self.owner],
                         rect.inflate(-4, -4))
 

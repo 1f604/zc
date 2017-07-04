@@ -4,6 +4,7 @@ from library import (territories, input_queue, output_queue, player,
                      load_image, filepath, sprites, info, screen, width,
                      height, selecteds)
 # import thread
+import colors
 import threading
 import socket
 import sys
@@ -15,11 +16,6 @@ pygame.init()
 font = pygame.font.Font(None, 36)
 text = font.render("Game over: A player has disconnected", True, (255, 0, 250))
 end = False
-BLACK = (0,   0,   0)
-WHITE = (255, 255, 255)
-BLUE = (0,   0, 255)
-GREEN = (0, 255,   0)
-RED = (255,   0,   0)
 
 
 def create_connection():  # Establish connection to server
@@ -30,18 +26,6 @@ def create_connection():  # Establish connection to server
     port = int(sys.argv[2])  # server port
     s.connect((host, port))
     return s
-
-
-def byteify(input):
-    if isinstance(input, dict):
-        return {byteify(key): byteify(value)
-                for key, value in input.iteritems()}
-    elif isinstance(input, list):
-        return [byteify(element) for element in input]
-    elif isinstance(input, unicode):
-        return input.encode('utf-8')
-    else:
-        return input
 
 
 class receive_commands(threading.Thread):
@@ -188,7 +172,7 @@ def main(screen):
             sprites.draw(screen)
             # draw selection box
             if draw_new_selection_box:
-                pygame.draw.rect(screen, GREEN, selection_box, 1)
+                pygame.draw.rect(screen, colors.GREEN, selection_box, 1)
                 selection_box.normalize()
                 for t in territories:
                     if selection_box.colliderect(t.rect):
