@@ -7,6 +7,7 @@ import random
 import math
 import message
 import collections
+import pickle
 
 refresh_rate = 0.1  # seconds per refresh
 running = True
@@ -80,7 +81,7 @@ def get_army_totals():
 
 
 def process_command(command):
-    # Evaluates all commands sent to server
+    # Executes all commands sent to server
     # (["move", src, dest, armies], and ["add_troops"])
     log("process command", command)
     if command[0] == "add_troops":
@@ -167,7 +168,6 @@ def send_new_state(queues):
 # Functions for creating connection to client
 def create_listner():
     # Creates socket to listen for clients to be added
-    # create a socket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # associate the socket with a port
@@ -199,7 +199,7 @@ class receive_commands(threading.Thread):
             command = message.recv_message(self.socket)
             if command != '':
                 log("receive_commands", command)
-                command = eval(command)
+                command = pickle.loads(command)
                 self.input_queue.put(command)
 
 
@@ -291,9 +291,9 @@ class Expedition():
     def arrived(self):
         now = time.time()
         if now - self.last >= self.delay:
+            # do battle, set new army value on destination territory
             return True
         return False
-
 
 
 def assign_territories(n):
@@ -315,6 +315,19 @@ def assign_territories(n):
         log("assign_territories", a)
 
 
+def check_timers():
+    check_expeditions()
+
+
+def check_expeditions():
+    global expeditions
+    new_expeditions = []
+    for expedition in expeditions:  # this is disgustingly inefficient
+        if not expedition.arrived():
+            new_expeditions.append(expedition)
+    expeditions = new_expeditions
+
+
 def start_game(input_queue, queues):
     # Starts send and receive threads for each client
     log("start_game", "starting new_troops thread")
@@ -328,6 +341,7 @@ def start_game(input_queue, queues):
     send_new_state(queues)
     while running:
         process_commands(input_queue)
+        check_timers()
         send_new_state(queues)
     print("TIME TO END!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     for sock in socks:

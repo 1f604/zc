@@ -61,12 +61,13 @@ class example(pygame.sprite.Sprite):
 
 
 class player():
-    def __init__(self):
+    def __init__(self, key=1):
         self.source_country = None
         self.destination_country = None
         self.command = []
         self.ID = None
         self.quota = 0
+        self.key = key
 
     def build_command(self, source, destination, troops=5):
         self.command = ["move", source, destination, troops]

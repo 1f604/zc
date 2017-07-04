@@ -8,6 +8,7 @@ import threading
 import socket
 import sys
 import message
+import pickle
 
 FPS = 90
 pygame.init()
@@ -52,8 +53,8 @@ class send_commands(threading.Thread):
     def run(self):
         while True:
                 command = output_queue.get()
-                command = str(command)
-                message.send_message(self.socket, command)
+                data_string = pickle.dumps(command)
+                message.send_message(self.socket, data_string)
 
 
 sock = create_connection()
@@ -111,7 +112,6 @@ def main(screen):
     clock = pygame.time.Clock()
     running = True
     draw_new_selection_box = False
-    selection_completed = False
     # Main loop
     while running:
         clock.tick(FPS)
