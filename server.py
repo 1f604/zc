@@ -11,6 +11,7 @@ import collections
 refresh_rate = 0.1  # seconds per refresh
 running = True
 socks = []
+expeditions = []  # ideally want a sorted {time:expedition} dictionary for this
 
 
 def log(location, message):
@@ -21,7 +22,7 @@ def log(location, message):
 def reachable(a, b, owner):
     # breadth first search to determine if territories a and b are connected
     tovisit = collections.deque([a])
-    visited = set()
+    visited = set()  # these are strings, so you can use a set.
     while tovisit:
         t = tovisit.popleft()
         visited.add(t)
@@ -96,9 +97,13 @@ def process_command(command):
             quota[k] = min(q + 3 + army_count[k] / 50, army_count[k], 100)
         print quota
     elif command[0] == "move":
+        # When a move command is issued, create an expedition from src to dest,
+        # and check every main loop iteration whether the expedition arrived.
         src = territory_reference[command[1]]
         dest = territory_reference[command[2]]
         dist = math.hypot(src.x-dest.x, src.y-dest.y)
+        exp = Expedition(src, dest, dist)
+        expeditions.append(exp)
         attacking_troops = command[3]
         if can_move(src, dest):
             if (src.owner in quota
@@ -277,16 +282,17 @@ class update_quota(threading.Thread):
 
 
 class Expedition():
-    def __init__(self):
+    def __init__(self, src, dest, delay):
         self.last = time.time()
-        self.cooldown = 300
+        self.delay = delay
+        self.src = src
+        self.dest = dest
 
-    def fire(self):
-        # fire gun, only if cooldown has been 0.3 seconds since last
-        now = pygame.time.get_ticks()
-        if now - self.last >= self.cooldown:
-            self.last = now
-            spawn_bullet()
+    def arrived(self):
+        now = time.time()
+        if now - self.last >= self.delay:
+            return True
+        return False
 
 
 
@@ -354,11 +360,13 @@ def do_server():
 
 # Main territory class
 class territory():
-    def __init__(self, name, owner, armies):
+    def __init__(self, name, owner, armies, x, y):
         territories.append(self)
         self.name = name
         self.owner = owner
         self.armies = armies
+        self.x = x
+        self.y = y
         territory_reference[self.name] = self
         connection_map[self.name] = []
 
@@ -376,7 +384,8 @@ connection_map = {}
 level_info = eval(open("standard_level.py", 'r').read())
 # Add territories
 for k in level_info['Territories']:
-    territory(k, 0, 0)
+    pos = level_info['Territories'][k]
+    territory(k, 0, 0, pos[0], pos[1])
 # Add territory connection information
 for pair in level_info['Connections']:
     connection_map[pair[0]].append(pair[1])
