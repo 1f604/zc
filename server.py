@@ -36,13 +36,13 @@ def reachable(a, b, owner):
 
 # Functions for processing messages from clients
 # and putting the new world state on each output queue
-def can_move(source, destination):
+def can_move(src, dest):
     # Checks to see if two territories are both under same player control
-    if reachable(source.name, destination.name, source.owner):
+    if reachable(src.name, dest.name, src.owner):
         return True
     # Checks to see if two territories are connected
-    for c in connection_map[source.name]:
-        if c == destination.name:
+    for c in connection_map[src.name]:
+        if c == dest.name:
             return True
     return False
 
@@ -80,7 +80,7 @@ def get_army_totals():
 
 def process_command(command):
     # Evaluates all commands sent to server
-    # (["move", source, destination, armies], and ["add_troops"])
+    # (["move", src, dest, armies], and ["add_troops"])
     log("process command", command)
     if command[0] == "add_troops":
         log("process_command", "adding troops")
@@ -96,27 +96,28 @@ def process_command(command):
             quota[k] = min(q + 3 + army_count[k] / 50, army_count[k], 100)
         print quota
     elif command[0] == "move":
-        source = territory_reference[command[1]]
-        destination = territory_reference[command[2]]
+        src = territory_reference[command[1]]
+        dest = territory_reference[command[2]]
+        dist = math.hypot(src.x-dest.x, src.y-dest.y)
         attacking_troops = command[3]
-        if can_move(source, destination):
-            if (source.owner in quota
-                    and quota[source.owner] >= attacking_troops):
-                if attacking_troops > source.armies:
-                    attacking_troops = source.armies
-                quota[source.owner] = quota[source.owner] - attacking_troops
-                if source.owner == destination.owner:
-                    source.armies -= attacking_troops
-                    destination.armies += attacking_troops
-                elif source.owner != destination.owner:
-                    source_troops, destination_troops = battle(
-                            attacking_troops, destination.armies)
-                    source.armies -= attacking_troops - source_troops
-                    destination.armies = destination_troops
-                    if destination.armies == 0 and attacking_troops > 0:
-                        destination.owner = source.owner
-                        destination.armies = source_troops
-                        source.armies -= source_troops
+        if can_move(src, dest):
+            if (src.owner in quota
+                    and quota[src.owner] >= attacking_troops):
+                if attacking_troops > src.armies:
+                    attacking_troops = src.armies
+                quota[src.owner] = quota[src.owner] - attacking_troops
+                if src.owner == dest.owner:
+                    src.armies -= attacking_troops
+                    dest.armies += attacking_troops
+                elif src.owner != dest.owner:
+                    src_troops, dest_troops = battle(
+                            attacking_troops, dest.armies)
+                    src.armies -= attacking_troops - src_troops
+                    dest.armies = dest_troops
+                    if dest.armies == 0 and attacking_troops > 0:
+                        dest.owner = src.owner
+                        dest.armies = src_troops
+                        src.armies -= src_troops
             else:
                 print "rejected", quota
 
@@ -273,6 +274,20 @@ class update_quota(threading.Thread):
             time.sleep(refresh_rate)
             log("update_quota", "generating command")
             self.input_queue.put(["update_quota"])
+
+
+class Expedition():
+    def __init__(self):
+        self.last = time.time()
+        self.cooldown = 300
+
+    def fire(self):
+        # fire gun, only if cooldown has been 0.3 seconds since last
+        now = pygame.time.get_ticks()
+        if now - self.last >= self.cooldown:
+            self.last = now
+            spawn_bullet()
+
 
 
 def assign_territories(n):

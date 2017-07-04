@@ -122,14 +122,10 @@ class territory(pygame.sprite.Sprite):
         self.update_count = 0
 
     def move(self, target):
-        # Move armies
-        if target.rect.collidepoint(pygame.mouse.get_pos()):
-            buttons = pygame.mouse.get_pressed()
-            if buttons[2]:
-                    print "moving!"
-                    player.build_command(self.name, target.name)
-                    output_queue.put(player.get_command())
-                    print output_queue
+        print "moving!"
+        player.build_command(self.name, target.name)
+        output_queue.put(player.get_command())
+        print output_queue
 
     def draw_border(self):
         rect = self.image.get_rect()
