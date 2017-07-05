@@ -98,8 +98,31 @@ def process_command(command):
                 attacking_troops = src.armies
             dist = math.hypot(src.x-dest.x, src.y-dest.y)*0.02 + time.time()
             src.armies -= attacking_troops
-            exp = Expedition(src, dest, attacking_troops, dist)
+            exp = Expedition(src, dest, attacking_troops, dist, src.owner)
             expeditions.append(exp)
+            exp_battle(exp)
+
+
+def exp_battle(exp):
+    es = [e for e in expeditions
+          if e.src == exp.dest and e.dest == exp.src and e.owner != exp.owner]
+    for e in es:
+        print "fighting:", e, exp
+        diff = e.troops - exp.troops
+        if diff == 0:
+            expeditions.remove(e)
+            expeditions.remove(exp)
+            print "both removed"
+            return
+        elif diff > 0:
+            expeditions.remove(exp)
+            e.troops = diff
+            print e, "won", exp, "removed"
+            return
+        elif diff < 0:
+            expeditions.remove(e)
+            exp.troops = -diff
+            print exp, "won", e, "removed"
 
 
 def get_commands(input_queue):
@@ -269,14 +292,20 @@ class update_quota(threading.Thread):
 
 
 class Expedition():
-    def __init__(self, src, dest, troops, arrival_time):
+    def __init__(self, src, dest, troops, arrival_time, src_owner):
         self.last = time.time()
         self.arrival_time = arrival_time
         self.src = src
         self.dest = dest
         self.troops = troops
+        self.owner = src_owner
         print "expedition created from", src.name, "to", dest.name, "with", \
               troops, "troops", "arriving at", arrival_time
+
+    def __str__(self):
+        return "expedition from " + self.src.name + " to " + self.dest.name + \
+                   " with " + str(self.troops) + " troops arriving at " + \
+                   str(self.arrival_time) + " owned by " + str(self.owner)
 
     def arrived(self):
         now = time.time()
@@ -284,13 +313,12 @@ class Expedition():
             print "expedition from", self.src.name, "to", \
                   self.dest.name, "arrived at", now
             # do battle, set new army value on destination territory
-            src = self.src
             dest = self.dest
             attacking_troops = self.troops
-            if src.owner == dest.owner:
+            if self.owner == dest.owner:
                 dest.armies += attacking_troops
-            elif src.owner != dest.owner:
-                winner, troops = battle(src.owner, dest.owner,
+            elif self.owner != dest.owner:
+                winner, troops = battle(self.owner, dest.owner,
                                         attacking_troops, dest.armies)
                 dest.owner = winner
                 dest.armies = troops
