@@ -126,13 +126,23 @@ def get_world_state():
     return world_state
 
 
+def get_world_expeditions():
+    # Adds territory information to a list
+    world_expeditions = ['expeditions']
+    for exp in expeditions:
+            world_expeditions.append([exp.owner, [exp.curr, exp.next] +
+                                     list(exp.path), exp.troops])
+    return world_expeditions
+
+
 def send_new_state(queues):
     # Puts new state on each output_queue
     state = get_world_state()
+    world_expeditions = get_world_expeditions()
     for q in queues:
         q.put(state)
     for q in queues:
-        q.put(["quota", quota])
+        q.put(world_expeditions)
 
 
 # Functions for creating connection to client

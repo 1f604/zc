@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_BACKQUOTE
 from library import (territories, input_queue, output_queue, player,
                      load_image, filepath, sprites, info, screen, width,
-                     height, selecteds)
+                     height, selecteds, territory_reference)
 # import thread
 import colors
 import threading
@@ -16,6 +16,7 @@ pygame.init()
 font = pygame.font.Font(None, 36)
 text = font.render("Game over: A player has disconnected", True, (255, 0, 250))
 end = False
+expeditions = []
 
 
 def create_connection():  # Establish connection to server
@@ -72,6 +73,13 @@ def update_world(new_state):
                 territory.set_fields()
 
 
+def update_expeditions(new_state):
+    # Update the expeditions based on command
+    global expeditions
+    expeditions = new_state[1:]
+    print expeditions
+
+
 def process_command():
     size = input_queue.qsize()
     if size > 0:
@@ -81,8 +89,8 @@ def process_command():
                 player.ID = command[1]
             elif command[0] == 'world':
                 update_world(command)
-            elif command[0] == 'quota':
-                player.quota = command[1]
+            elif command[0] == 'expeditions':
+                update_expeditions(command)
             elif command[0] == 'end':
                 print "#####################received end command##############"
                 global end
@@ -99,6 +107,17 @@ def select(t, own_select):
 def deselect(t):
     t.selected = False
     selecteds.discard(t)
+
+
+def draw_paths():
+    for ex in expeditions:
+        path = ex[1]
+        points = []
+        for name in path:
+            x = territory_reference[name].x
+            y = territory_reference[name].y
+            points.append((x, y))
+        pygame.draw.lines(screen, colors.WHITE, False, points, 1)
 
 
 def main(screen):
@@ -176,6 +195,7 @@ def main(screen):
             info.update(time)
             screen.blit(bg_image, (0, 0))
             sprites.draw(screen)
+            draw_paths()
             # draw selection box
             if draw_new_selection_box:
                 pygame.draw.rect(screen, colors.GREEN, selection_box, 1)

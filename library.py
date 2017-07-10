@@ -10,6 +10,7 @@ height = 500
 fullscreen = False
 screen = pygame.display.set_mode([width, height], fullscreen, 0)
 screen.fill((0, 0, 0))
+territory_reference = {}
 
 # Sprite groups
 sprites = pygame.sprite.LayeredUpdates()
@@ -122,6 +123,7 @@ class territory(pygame.sprite.Sprite):
         self.army = army(self.x, self.y, self.armies)
         sprites.move_to_front(self.army)
         self.update_count = 0
+        territory_reference[self.name] = self
 
     def move(self, waypoints):
         print "moving!"
