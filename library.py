@@ -70,8 +70,8 @@ class player():
         self.quota = 0
         self.key = key
 
-    def build_command(self, source, destination, troops=5):
-        self.command = ["move", source, destination, troops]
+    def build_command(self, source, waypoints, troops=5):
+        self.command = ["move", source, waypoints, troops]
 
     def get_command(self):
         return self.command
@@ -123,9 +123,9 @@ class territory(pygame.sprite.Sprite):
         sprites.move_to_front(self.army)
         self.update_count = 0
 
-    def move(self, target):
+    def move(self, waypoints):
         print "moving!"
-        player.build_command(self.name, target.name)
+        player.build_command(self.name, waypoints)
         output_queue.put(player.get_command())
 
     def draw_border(self):

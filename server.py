@@ -91,38 +91,11 @@ def process_command(command):
         # When a move command is issued, create an expedition from src to dest,
         # and check every main loop iteration whether the expedition arrived.
         src = territory_reference[command[1]]
-        dest = territory_reference[command[2]]
-        if can_move(src, dest):
-            attacking_troops = command[3]
-            if attacking_troops > src.armies:
-                attacking_troops = src.armies
-            dist = math.hypot(src.x-dest.x, src.y-dest.y)*0.02 + time.time()
-            src.armies -= attacking_troops
-            exp = Expedition(src, dest, attacking_troops, dist, src.owner)
-            expeditions.append(exp)
-            exp_battle(exp)
-
-
-def exp_battle(exp):
-    es = [e for e in expeditions
-          if e.src == exp.dest and e.dest == exp.src and e.owner != exp.owner]
-    for e in es:
-        print "fighting:", e, exp
-        diff = e.troops - exp.troops
-        if diff == 0:
-            expeditions.remove(e)
-            expeditions.remove(exp)
-            print "both removed"
-            return
-        elif diff > 0:
-            expeditions.remove(exp)
-            e.troops = diff
-            print e, "won", exp, "removed"
-            return
-        elif diff < 0:
-            expeditions.remove(e)
-            exp.troops = -diff
-            print exp, "won", e, "removed"
+        waypoints = command[2]
+        attacking_troops = command[3]
+        if attacking_troops > src.armies:
+            attacking_troops = src.armies
+        Expedition(src, waypoints, attacking_troops, src.owner)
 
 
 def get_commands(input_queue):
@@ -291,39 +264,141 @@ class update_quota(threading.Thread):
             self.input_queue.put(["update_quota"])
 
 
+def nearest_visible(owner, src, (x, y)):
+    # todo: implement fog of war
+    src = territory_reference[src]
+    nearest = src
+    dist = math.hypot(src.x-x, src.y-y)
+    for t in territories:
+        newdist = math.hypot(t.x-x, t.y-y)
+        if newdist < dist:
+            dist = newdist
+            nearest = t
+    return nearest.name
+
+
 class Expedition():
-    def __init__(self, src, dest, troops, arrival_time, src_owner):
+    def __init__(self, src, waypoints, troops, src_owner):
         self.last = time.time()
-        self.arrival_time = arrival_time
         self.src = src
-        self.dest = dest
+        self.curr = src.name
+        self.waypoints = collections.deque(waypoints)
+        self.waypoint = self.waypoints.popleft()
         self.troops = troops
         self.owner = src_owner
-        print "expedition created from", src.name, "to", dest.name, "with", \
-              troops, "troops", "arriving at", arrival_time
+        self.src.armies -= troops
+        expeditions.append(self)
+        self.do_arrived()
+
+    def compute_path(self, dest, traverse_enemy_zones):
+        # todo: implement fog of war
+        if traverse_enemy_zones:
+            # allowed = seen[self.owner]  # can go to any seen zone
+            allowed = {t.name for t in territories}
+        else:
+            # allowed = {dest} | owned[self.owner] # can only go thru own zones
+            allowed = {t.name for t in territories}
+        unvisited = {node: None for node in allowed}  # using None as +inf
+        prev = {node: None for node in allowed}
+        visited = {}
+        current = self.curr
+        currentDistance = 0
+        unvisited[current] = currentDistance
+        while True:  # from https://stackoverflow.com/questions/22897209
+            for neighbour, distance in edges[current].items():
+                if neighbour not in unvisited:
+                    continue
+                newDistance = currentDistance + distance
+                if unvisited[neighbour] is None or\
+                   unvisited[neighbour] > newDistance:
+                    unvisited[neighbour] = newDistance
+                    prev[neighbour] = current
+            visited[current] = currentDistance
+            del unvisited[current]
+            if not unvisited or current == dest:
+                break
+            candidates = [node for node in unvisited.items() if node[1]]
+            current, currentDistance = \
+                sorted(candidates, key=lambda x: x[1])[0]
+        path = collections.deque()
+        u = dest
+        while prev[u]:
+            path.appendleft(u)
+            u = prev[u]
+        return path
 
     def __str__(self):
-        return "expedition from " + self.src.name + " to " + self.dest.name + \
+        return "expedition from " + self.src.name + " to " + self.next +\
                    " with " + str(self.troops) + " troops arriving at " + \
                    str(self.arrival_time) + " owned by " + str(self.owner)
 
-    def arrived(self):
-        now = time.time()
-        if now >= self.arrival_time:
+    def go_next(self):
+        self.next = self.path.popleft()
+        dist = edges[self.curr][self.next]
+        self.arrival_time = time.time() + dist * 0.02
+        self.exp_battle()
+
+    def exp_battle(self):
+        es = [e for e in expeditions if e.curr == self.next
+              and e.next == self.curr and e.owner != self.owner]
+        for e in es:
+            print "fighting:", e, self
+            diff = e.troops - self.troops
+            if diff == 0:
+                expeditions.remove(e)
+                expeditions.remove(self)
+                print "both removed"
+                return
+            elif diff > 0:
+                expeditions.remove(self)
+                e.troops = diff
+                print e, "won", self, "removed"
+                return
+            elif diff < 0:
+                expeditions.remove(e)
+                self.troops = -diff
+                print self, "won", e, "removed"
+
+    def do_arrived(self):
+        new_dest = nearest_visible(self.owner, self.curr, self.waypoint)
+        while self.curr == new_dest:  # go to next waypoint
+            if not self.waypoints:  # no more waypoints, end journey
+                territory_reference[self.curr].armies\
+                                    += self.troops  # deposit armies at end
+                expeditions.remove(self)
+                return
+            self.waypoint = self.waypoints.popleft()
+            new_dest = nearest_visible(self.owner, self.curr, self.waypoint)
+        # now we have a waypoint whose nearest is not curr node
+        self.path = self.compute_path(new_dest, True)
+        print self.curr, self.waypoint, new_dest, self.path
+        self.go_next()
+
+    def check_arrived(self):
+        if time.time() > self.arrival_time:
+            self.curr = self.next
+            if territory_reference[self.curr].owner != self.owner:
+                self.do_battle()
+            if self in expeditions:
+                if self.path:  # not yet reached destination
+                    self.go_next()
+                else:  # arrived at destination
+                    self.do_arrived()
+
+    def do_battle(self):
             print "expedition from", self.src.name, "to", \
-                  self.dest.name, "arrived at", now
+                  self.next, "arrived at", time.time()
             # do battle, set new army value on destination territory
-            dest = self.dest
-            attacking_troops = self.troops
-            if self.owner == dest.owner:
-                dest.armies += attacking_troops
-            elif self.owner != dest.owner:
-                winner, troops = battle(self.owner, dest.owner,
-                                        attacking_troops, dest.armies)
-                dest.owner = winner
+            dest = territory_reference[self.curr]
+            winner, troops = battle(self.owner, dest.owner,
+                                    self.troops, dest.armies)
+            dest.owner = winner
+            if winner == self.owner:
+                dest.armies = 0
+                self.troops = troops
+            else:
                 dest.armies = troops
-            return True
-        return False
+                expeditions.remove(self)
 
 
 def assign_territories(n):
@@ -351,11 +426,8 @@ def check_timers():
 
 def check_expeditions():
     global expeditions
-    new_expeditions = []
     for expedition in expeditions:  # this is disgustingly inefficient
-        if not expedition.arrived():
-            new_expeditions.append(expedition)
-    expeditions = new_expeditions
+        expedition.check_arrived()
 
 
 def start_game(input_queue, queues):
@@ -424,6 +496,7 @@ quota = {}
 territory_reference = {}
 # Map used to check if two territories are connected
 connection_map = {}
+edges = {}
 # Level confg read in form file
 level_info = eval(open("standard_level.py", 'r').read())
 # Add territories
@@ -434,5 +507,18 @@ for k in level_info['Territories']:
 for pair in level_info['Connections']:
     connection_map[pair[0]].append(pair[1])
     connection_map[pair[1]].append(pair[0])
+    src = territory_reference[pair[0]]
+    dest = territory_reference[pair[1]]
+    dist = math.hypot(src.x-dest.x, src.y-dest.y)
+    if pair[0] not in edges:
+        edges[pair[0]] = {pair[1]: dist}
+    else:
+        edges[pair[0]][pair[1]] = dist
+    if pair[1] not in edges:
+        edges[pair[1]] = {pair[0]: dist}
+    else:
+        edges[pair[1]][pair[0]] = dist
+for key, value in edges.items():
+    print key, value
 
 do_server()

@@ -140,11 +140,10 @@ def main(screen):
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
                     and buttons[2]:  # right click without shift, move armies
-                for t in territories:
-                    if t.rect.collidepoint(pygame.mouse.get_pos()):
-                        # move armies from selected zones ot target
-                        for s in selecteds:
-                            s.move(t)
+                waypoints = [pygame.mouse.get_pos()]
+                # move armies from selected zones ot target
+                for s in selecteds:
+                    s.move(waypoints)
 
             if event.type == pygame.MOUSEBUTTONUP \
                     and not buttons[0]:
