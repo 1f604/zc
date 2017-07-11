@@ -36,6 +36,7 @@ Start specified number of clients one for each player:
 - Shift-left click and drag for freeform selection
 - Shift-right click and drag for freeform deselection
 - Ctrl-backquote (the \` symbol) to switch between own-territory select and enemy territory select modes
+- Ctrl-tab to switch between pass-through enemy territory mode and pass-through own territory modes
 - (deprecated) Number keys change quantity of armies moved
 
 *Note: The game quickly digresses into maniacal clicking*
