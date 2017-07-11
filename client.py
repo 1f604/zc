@@ -136,6 +136,23 @@ def draw_paths():
             pygame.draw.lines(screen, ex[5], False, points, 1)
 
 
+def draw_cross(color, (x, y), width):
+    p0 = (x-3, y-3)
+    p1 = (x+3, y+3)
+    p2 = (x-3, y+3)
+    p3 = (x+3, y-3)
+    pygame.draw.line(screen, color, p0, p1, width)
+    pygame.draw.line(screen, color, p2, p3, width)
+
+
+def draw_points(waypoints):
+    for ex in expeditions:
+        for waypoint in ex[6]:
+            draw_cross(ex[5], waypoint, 2)
+    for waypoint in waypoints:
+        draw_cross(colors.WHITE, waypoint, 2)
+
+
 def main(screen):
     # Create background
     bg_image = load_image(filepath + "classic_board.jpg")
@@ -237,6 +254,7 @@ def main(screen):
             screen.blit(bg_image, (0, 0))
             draw_paths()
             sprites.draw(screen)
+            draw_points(waypoints)
             # draw selection box
             if draw_new_selection_box:
                 pygame.draw.rect(screen, colors.GREEN, selection_box, 1)

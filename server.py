@@ -135,7 +135,8 @@ def get_world_expeditions():
             world_expeditions.append([exp.owner, [exp.curr, exp.next] +
                                      list(exp.path), exp.troops,
                                      exp.start_time, exp.arrival_time,
-                                     exp.color])
+                                     exp.color, [exp.waypoint] +
+                                     list(exp.waypoints)])
     return world_expeditions
 
 
