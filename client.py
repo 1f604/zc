@@ -126,14 +126,14 @@ def draw_paths():
         startx = r * diffx + curr.x
         starty = r * diffy + curr.y
         pnt0 = (int(startx), int(starty))
-        pygame.draw.circle(screen, player.color, pnt0, 5, 0)
-        pygame.draw.line(screen, player.color, pnt0, pnt1, 1)
+        pygame.draw.circle(screen, ex[5], pnt0, 5, 0)
+        pygame.draw.line(screen, ex[5], pnt0, pnt1, 1)
         if len(path) > 2:
             for name in path[1:]:
                 x = territory_reference[name].x
                 y = territory_reference[name].y
                 points.append((x, y))
-            pygame.draw.lines(screen, player.color, False, points, 1)
+            pygame.draw.lines(screen, ex[5], False, points, 1)
 
 
 def main(screen):
