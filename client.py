@@ -78,7 +78,7 @@ def update_expeditions(new_state):
     # Update the expeditions based on command
     global expeditions
     expeditions = new_state[1:]
-    print expeditions
+    # print expeditions
 
 
 def process_command():
@@ -147,6 +147,8 @@ def main(screen):
     draw_new_selection_box = False
     own_select = True
     pass_thru = False
+    setting_waypoints = False
+    waypoints = []
     # Main loop
     while running:
         clock.tick(FPS)
@@ -164,6 +166,17 @@ def main(screen):
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+                if ctrl:
+                    setting_waypoints = True
+                    print setting_waypoints
+            if event.type == pygame.KEYUP:
+                if not ctrl:
+                    setting_waypoints = False
+                    print setting_waypoints
+                    if waypoints:
+                        for s in selecteds:
+                            s.move(waypoints, pass_thru)
+                    waypoints = []
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not shift and buttons[0]:
                     # left click without shift, start box
@@ -179,12 +192,18 @@ def main(screen):
                 print "pass thru enemy territory inverted"
 
             if event.type == pygame.MOUSEBUTTONDOWN \
-                    and not shift and buttons[2]:
+                    and not shift and buttons[2] and not setting_waypoints:
                     # right click without shift, move armies
                 waypoints = [pygame.mouse.get_pos()]
                 # move armies from selected zones ot target
                 for s in selecteds:
                     s.move(waypoints, pass_thru)
+                waypoints = []
+
+            if event.type == pygame.MOUSEBUTTONDOWN \
+                    and not shift and buttons[2] and setting_waypoints:
+                    # right click without shift, move armies
+                waypoints.append(pygame.mouse.get_pos())
 
             if event.type == pygame.MOUSEBUTTONUP \
                     and not buttons[0]:
