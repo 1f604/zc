@@ -2,7 +2,7 @@ def log(location, message):
   #print location, message
   pass
 
-header_size = 4
+header_size = 8
 
 def recv_bytes(socket, total_bytes):
   data_buffer = ""

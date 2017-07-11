@@ -39,7 +39,13 @@ class receive_commands(threading.Thread):
         while True:
             command = message.recv_message(self.socket)
             if command != '':
-                command = json.loads(command)
+                print "receiving command"
+                print command
+                try:
+                    command = json.loads(command)
+                except:
+                    print command
+                print command
                 input_queue.put(command)
 
 
