@@ -131,7 +131,8 @@ def get_world_expeditions():
     world_expeditions = ['expeditions']
     for exp in expeditions:
             world_expeditions.append([exp.owner, [exp.curr, exp.next] +
-                                     list(exp.path), exp.troops])
+                                     list(exp.path), exp.troops,
+                                     exp.start_time, exp.arrival_time])
     return world_expeditions
 
 
@@ -299,6 +300,7 @@ class Expedition():
         self.src.armies -= troops
         expeditions.append(self)
         self.do_arrived()
+        self.start_time = time.time()
 
     def compute_path(self, dest, traverse_enemy_zones):
         # todo: implement fog of war
@@ -345,6 +347,7 @@ class Expedition():
     def go_next(self):
         self.next = self.path.popleft()
         dist = edges[self.curr][self.next]
+        self.start_time = time.time()
         self.arrival_time = time.time() + dist * 0.02
         self.exp_battle()
 

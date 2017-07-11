@@ -71,6 +71,16 @@ class player():
         self.quota = 0
         self.key = key
 
+    def assign_color(self):
+        if self.ID == 1:
+            self.color = ((250, 0, 0))
+        if self.ID == 2:
+            self.color = ((0, 250, 0))
+        if self.ID == 3:
+            self.color = ((0, 0, 250))
+        if self.ID == 4:
+            self.color = ((250, 0, 250))
+
     def build_command(self, source, waypoints, troops=5):
         self.command = ["move", source, waypoints, troops]
 

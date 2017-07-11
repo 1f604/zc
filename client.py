@@ -10,6 +10,7 @@ import socket
 import sys
 import message
 import json
+import time
 
 FPS = 90
 pygame.init()
@@ -87,6 +88,7 @@ def process_command():
             command = input_queue.get()
             if command[0] == 'ID':
                 player.ID = command[1]
+                player.assign_color()
             elif command[0] == 'world':
                 update_world(command)
             elif command[0] == 'expeditions':
@@ -113,11 +115,24 @@ def draw_paths():
     for ex in expeditions:
         path = ex[1]
         points = []
+        curr = territory_reference[path[0]]
+        nxt = territory_reference[path[1]]
+        pnt1 = (nxt.x, nxt.y)
+        diffx = (nxt.x - curr.x)
+        diffy = (nxt.y - curr.y)
+        difftime = ex[4] - ex[3]
+        diffnow = ex[4] - time.time()
+        r = 1 - diffnow / float(difftime)
+        startx = r * diffx + curr.x
+        starty = r * diffy + curr.y
+        pnt0 = (int(startx), int(starty))
+        pygame.draw.circle(screen, player.color, pnt0, 5, 0)
+        pygame.draw.line(screen, player.color, pnt0, pnt1, 1)
         for name in path:
             x = territory_reference[name].x
             y = territory_reference[name].y
             points.append((x, y))
-        pygame.draw.lines(screen, colors.WHITE, False, points, 1)
+        pygame.draw.lines(screen, player.color, False, points, 1)
 
 
 def main(screen):
