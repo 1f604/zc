@@ -81,8 +81,8 @@ class player():
         if self.ID == 4:
             self.color = ((250, 0, 250))
 
-    def build_command(self, source, waypoints, troops=5):
-        self.command = ["move", source, waypoints, troops]
+    def build_command(self, source, waypoints, pass_thru, troops=5):
+        self.command = ["move", source, waypoints, troops, pass_thru]
 
     def get_command(self):
         return self.command
@@ -135,9 +135,9 @@ class territory(pygame.sprite.Sprite):
         self.update_count = 0
         territory_reference[self.name] = self
 
-    def move(self, waypoints):
+    def move(self, waypoints, pass_thru):
         print "moving!"
-        player.build_command(self.name, waypoints)
+        player.build_command(self.name, waypoints, pass_thru)
         output_queue.put(player.get_command())
 
     def draw_border(self):

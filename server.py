@@ -93,10 +93,11 @@ def process_command(command):
         src = territory_reference[command[1]]
         waypoints = command[2]
         attacking_troops = command[3]
+        pass_thru = command[4]
         if attacking_troops > src.armies:
             attacking_troops = src.armies
         if attacking_troops > 0:
-            Expedition(src, waypoints, attacking_troops, src.owner)
+            Expedition(src, waypoints, attacking_troops, src.owner, pass_thru)
 
 
 def get_commands(input_queue):
@@ -291,8 +292,9 @@ def nearest_visible(owner, src, (x, y)):
 
 
 class Expedition():
-    def __init__(self, src, waypoints, troops, src_owner):
+    def __init__(self, src, waypoints, troops, src_owner, pass_thru):
         self.last = time.time()
+        self.pass_thru = pass_thru
         self.src = src
         self.curr = src.name
         self.waypoints = collections.deque(waypoints)
@@ -312,14 +314,17 @@ class Expedition():
         if src_owner == 4:
             self.color = ((250, 0, 250))
 
-    def compute_path(self, dest, traverse_enemy_zones):
+    def compute_path(self, dest):
         # todo: implement fog of war
-        if traverse_enemy_zones:
+        owned = {t.name for t in territories if t.owner == self.owner}
+        if self.pass_thru:
             # allowed = seen[self.owner]  # can go to any seen zone
             allowed = {t.name for t in territories}
         else:
-            # allowed = {dest} | owned[self.owner] # can only go thru own zones
-            allowed = {t.name for t in territories}
+            allowed = {dest} | owned  # can only go thru own zones
+            if not reachable(self.curr, dest, self.owner):
+                return collections.deque([self.curr])
+            # allowed = {t.name for t in territories}
         unvisited = {node: None for node in allowed}  # using None as +inf
         prev = {node: None for node in allowed}
         visited = {}
@@ -340,6 +345,8 @@ class Expedition():
             if not unvisited or current == dest:
                 break
             candidates = [node for node in unvisited.items() if node[1]]
+            if not candidates:
+                break
             current, currentDistance = \
                 sorted(candidates, key=lambda x: x[1])[0]
         path = collections.deque()
@@ -347,6 +354,8 @@ class Expedition():
         while prev[u]:
             path.appendleft(u)
             u = prev[u]
+        if not path:
+            path = collections.deque([current])
         return path
 
     def __str__(self):
@@ -393,7 +402,12 @@ class Expedition():
             self.waypoint = self.waypoints.popleft()
             new_dest = nearest_visible(self.owner, self.curr, self.waypoint)
         # now we have a waypoint whose nearest is not curr node
-        self.path = self.compute_path(new_dest, True)
+        self.path = self.compute_path(new_dest)
+        if self.path[0] == self.curr:  # unreachable, end journey
+            territory_reference[self.curr].armies\
+                                += self.troops  # deposit armies at end
+            expeditions.remove(self)
+            return
         print self.curr, self.waypoint, new_dest, self.path
         self.go_next()
 

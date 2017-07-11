@@ -42,7 +42,6 @@
 'western_australia': [851, 392],
 'eastern_australia': [928, 388]},
 'Connections':[
-['alaska', 'kamchatka'],
 ['alaska', 'northwest_territory'],
 ['alaska', 'alberta'],
 ['northwest_territory', 'greenland'],
@@ -97,7 +96,7 @@
 ['east_africa', 'middle_east'],
 ['east_africa', 'madagascar'],
 ['south_africa', 'madagascar'],
-['east_africa', 'south_africa'], 
+['east_africa', 'south_africa'],
 ['ural', 'siberia'],
 ['ural', 'afghanistan'],
 ['ural', 'china'],

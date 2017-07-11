@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_BACKQUOTE
+from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_BACKQUOTE, K_TAB
 from library import (territories, input_queue, output_queue, player,
                      load_image, filepath, sprites, info, screen, width,
                      height, selecteds, territory_reference)
@@ -146,6 +146,7 @@ def main(screen):
     running = True
     draw_new_selection_box = False
     own_select = True
+    pass_thru = False
     # Main loop
     while running:
         clock.tick(FPS)
@@ -154,6 +155,8 @@ def main(screen):
             buttons = pygame.mouse.get_pressed()
             keys = pygame.key.get_pressed()
             mods = pygame.key.get_mods()
+            shift = mods & pygame.KMOD_SHIFT
+            ctrl = mods & pygame.KMOD_CTRL
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -162,29 +165,32 @@ def main(screen):
                     pygame.quit()
                     sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN \
-                    and not mods & pygame.KMOD_SHIFT \
-                    and buttons[0]:
+                    and not shift and buttons[0]:
                     # left click without shift, start box
                 draw_new_selection_box = True
                 leftclick_down_location = pygame.mouse.get_pos()
 
-            if keys[K_BACKQUOTE] and mods & pygame.KMOD_CTRL:
+            if keys[K_BACKQUOTE] and ctrl:
                 own_select = not own_select
                 print "territory select inverted"
 
+            if keys[K_TAB] and ctrl:
+                pass_thru = not pass_thru
+                print "pass thru enemy territory inverted"
+
             if event.type == pygame.MOUSEBUTTONDOWN \
-                    and not pygame.key.get_mods() & pygame.KMOD_SHIFT \
-                    and buttons[2]:  # right click without shift, move armies
+                    and not shift and buttons[2]:
+                    # right click without shift, move armies
                 waypoints = [pygame.mouse.get_pos()]
                 # move armies from selected zones ot target
                 for s in selecteds:
-                    s.move(waypoints)
+                    s.move(waypoints, pass_thru)
 
             if event.type == pygame.MOUSEBUTTONUP \
                     and not buttons[0]:
                 draw_new_selection_box = False
 
-        if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        if shift:
             # shift left mousebutton drag select
             for t in territories:
                 if t.rect.collidepoint(pygame.mouse.get_pos()):
