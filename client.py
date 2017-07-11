@@ -128,11 +128,12 @@ def draw_paths():
         pnt0 = (int(startx), int(starty))
         pygame.draw.circle(screen, player.color, pnt0, 5, 0)
         pygame.draw.line(screen, player.color, pnt0, pnt1, 1)
-        for name in path:
-            x = territory_reference[name].x
-            y = territory_reference[name].y
-            points.append((x, y))
-        pygame.draw.lines(screen, player.color, False, points, 1)
+        if len(path) > 2:
+            for name in path[1:]:
+                x = territory_reference[name].x
+                y = territory_reference[name].y
+                points.append((x, y))
+            pygame.draw.lines(screen, player.color, False, points, 1)
 
 
 def main(screen):
@@ -209,8 +210,8 @@ def main(screen):
             sprites.update(time)
             info.update(time)
             screen.blit(bg_image, (0, 0))
-            sprites.draw(screen)
             draw_paths()
+            sprites.draw(screen)
             # draw selection box
             if draw_new_selection_box:
                 pygame.draw.rect(screen, colors.GREEN, selection_box, 1)

@@ -95,7 +95,8 @@ def process_command(command):
         attacking_troops = command[3]
         if attacking_troops > src.armies:
             attacking_troops = src.armies
-        Expedition(src, waypoints, attacking_troops, src.owner)
+        if attacking_troops > 0:
+            Expedition(src, waypoints, attacking_troops, src.owner)
 
 
 def get_commands(input_queue):
