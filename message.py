@@ -1,5 +1,5 @@
 def log(location, message):
-  #print location, message
+  print location, message
   pass
 
 header_size = 8
@@ -42,6 +42,7 @@ def send_bytes(socket, data_buffer):
 
 def send_message(socket, message):
   header = message_size(message)
+  log(len(message), header)
   message = header + message
   log('send_message', message)
   send_bytes(socket, message)

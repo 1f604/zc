@@ -8,6 +8,7 @@ import math
 import message
 import collections
 import json
+import cProfile as profile
 
 refresh_rate = 0.1  # seconds per refresh
 running = True
@@ -103,9 +104,9 @@ def process_command(command):
 def get_commands(input_queue):
     # Get list of commands from input queue
     commands = []
+    size = input_queue.qsize()
     command = input_queue.get()
     commands.append(command)
-    size = input_queue.qsize()
     for i in range(size):
         command = input_queue.get()
         commands.append(command)
@@ -135,8 +136,7 @@ def get_world_expeditions():
             world_expeditions.append([exp.owner, [exp.curr, exp.next] +
                                      list(exp.path), exp.troops,
                                      exp.start_time, exp.arrival_time,
-                                     exp.color, [exp.waypoint] +
-                                     list(exp.waypoints)])
+                                     exp.color])
     return world_expeditions
 
 
@@ -199,6 +199,7 @@ class receive_commands(threading.Thread):
                 command = json.loads(command)
                 if check_cmd_valid(command, self.ID):
                     self.input_queue.put(command)
+            time.sleep(0.1)
 
 
 class send_commands(threading.Thread):
@@ -392,28 +393,37 @@ class Expedition():
                 self.troops = -diff
                 print self, "won", e, "removed"
 
-    def do_arrived(self):
+    def slow_me(self):
         new_dest = nearest_visible(self.owner, self.curr, self.waypoint)
         while self.curr == new_dest:  # go to next waypoint
             if not self.waypoints:  # no more waypoints, end journey
                 territory_reference[self.curr].armies\
                                     += self.troops  # deposit armies at end
                 expeditions.remove(self)
-                return
+                return False
             self.waypoint = self.waypoints.popleft()
             new_dest = nearest_visible(self.owner, self.curr, self.waypoint)
-        # now we have a waypoint whose nearest is not curr node
         self.path = self.compute_path(new_dest)
+        return True
+
+    def do_arrived(self):
+        if not self.slow_me():
+            return
+        # now we have a waypoint whose nearest is not curr node
         if self.path[0] == self.curr:  # unreachable, end journey
             territory_reference[self.curr].armies\
                                 += self.troops  # deposit armies at end
             expeditions.remove(self)
             return
-        print self.curr, self.waypoint, new_dest, self.path
+        # print self.curr, self.waypoint, new_dest, self.path
         self.go_next()
 
     def check_arrived(self):
         if time.time() > self.arrival_time:
+            # diff = time.time() - self.arrival_time
+            # if diff > 0.3:
+            #    raise Exception('Exceeded arrival time by ' + str(diff)
+            #                    + ' seconds')
             self.curr = self.next
             if territory_reference[self.curr].owner != self.owner:
                 self.do_battle()
@@ -559,4 +569,7 @@ for pair in level_info['Connections']:
 for key, value in edges.items():
     print key, value
 
-do_server()
+# do_server()
+
+
+profile.run('do_server()', 'servstats')

@@ -1,3 +1,4 @@
+# coding=utf-8
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_BACKQUOTE, K_TAB
 from library import (territories, input_queue, output_queue, player,
@@ -11,6 +12,7 @@ import sys
 import message
 import json
 import time
+import cProfile as profile
 
 FPS = 90
 pygame.init()
@@ -43,7 +45,9 @@ class receive_commands(threading.Thread):
                 print command
                 try:
                     command = json.loads(command)
-                except:
+                except Exception as e:
+                    print "&&&&&EXCEPTION"
+                    print(e)
                     print command
                 print command
                 input_queue.put(command)
@@ -152,10 +156,13 @@ def draw_cross(color, (x, y), width):
 
 
 def draw_points(waypoints):
-    for ex in expeditions:
-        for waypoint in ex[6]:
-            draw_cross(ex[5], waypoint, 2)
+    # drawing all the waypoints MAKES THE GAME LAG A HUGE AMOUNT. DONT DO THIS
+    # for ex in expeditions:
+    #    for waypoint in ex[6]:
+    #        pygame.draw.circle(screen, ex[5], waypoint, 3)
+            # draw_cross(ex[5], waypoint, 2)
     for waypoint in waypoints:
+        # pygame.draw.circle(screen, colors.WHITE, waypoint, 3)
         draw_cross(colors.WHITE, waypoint, 2)
 
 
@@ -176,6 +183,11 @@ def main(screen):
     while running:
         clock.tick(FPS)
         process_command()
+        print "££££££££££££££££££££££££££££££££££££££££££££££££"
+        print "££££££££££££££££££££££££££££££££££££££££££££££££"
+        print "£££££££££££££££££new cycle running££££££££££££££"
+        print "££££££££££££££££££££££££££££££££££££££££££££££££"
+        print "££££££££££££££££££££££££££££££££££££££££££££££££"
         for event in pygame.event.get():
             buttons = pygame.mouse.get_pressed()
             keys = pygame.key.get_pressed()
@@ -276,4 +288,5 @@ def main(screen):
             pygame.display.flip()
 
 
-main(screen)
+profile.run('main(screen)', 'restats')
+# main(screen)
