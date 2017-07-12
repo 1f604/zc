@@ -1,5 +1,5 @@
 def log(location, message):
-  print location, message
+  # print location, message
   pass
 
 header_size = 8
@@ -21,7 +21,7 @@ def recv_message(socket):
   message = recv_bytes(socket, num_bytes)
   log('recv_message', message)
   return message
-  
+
 def message_size(message):
   len_mess = str(len(message))
   while len(len_mess) < header_size:
@@ -47,6 +47,3 @@ def send_message(socket, message):
   log('send_message', message)
   send_bytes(socket, message)
   #log('send_message', "sent")
-  
-    
-    

@@ -3,7 +3,7 @@ import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_BACKQUOTE, K_TAB
 from library import (territories, input_queue, output_queue, player,
                      load_image, filepath, sprites, info, screen, width,
-                     height, selecteds, territory_reference)
+                     height, selecteds, territory_reference, move_zones)
 # import thread
 import colors
 import threading
@@ -183,11 +183,6 @@ def main(screen):
     while running:
         clock.tick(FPS)
         process_command()
-        print "££££££££££££££££££££££££££££££££££££££££££££££££"
-        print "££££££££££££££££££££££££££££££££££££££££££££££££"
-        print "£££££££££££££££££new cycle running££££££££££££££"
-        print "££££££££££££££££££££££££££££££££££££££££££££££££"
-        print "££££££££££££££££££££££££££££££££££££££££££££££££"
         for event in pygame.event.get():
             buttons = pygame.mouse.get_pressed()
             keys = pygame.key.get_pressed()
@@ -209,8 +204,7 @@ def main(screen):
                     setting_waypoints = False
                     print setting_waypoints
                     if waypoints:
-                        for s in selecteds:
-                            s.move(waypoints, pass_thru)
+                        move_zones(selecteds, waypoints, pass_thru)
                     waypoints = []
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not shift and buttons[0]:
@@ -231,8 +225,7 @@ def main(screen):
                     # right click without shift, move armies
                 waypoints = [pygame.mouse.get_pos()]
                 # move armies from selected zones ot target
-                for s in selecteds:
-                    s.move(waypoints, pass_thru)
+                move_zones(selecteds, waypoints, pass_thru)
                 waypoints = []
 
             if event.type == pygame.MOUSEBUTTONDOWN \

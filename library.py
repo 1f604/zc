@@ -81,8 +81,8 @@ class player():
         if self.ID == 4:
             self.color = ((250, 0, 250))
 
-    def build_command(self, source, waypoints, pass_thru, troops=5):
-        self.command = ["move", source, waypoints, troops, pass_thru]
+    def build_command(self, sources, waypoints, pass_thru, troops=5):
+        self.command = ["move", sources, waypoints, troops, pass_thru]
 
     def get_command(self):
         return self.command
@@ -113,6 +113,12 @@ class army(pygame.sprite.Sprite):
     def update(self, current_time):
         self.rect.center = (self.x, self.y)
         self.image = self.default_font.render(self.text, True, self.color)
+
+
+def move_zones(zones, waypoints, pass_thru):
+    names = [zone.name for zone in zones]
+    player.build_command(names, waypoints, pass_thru)
+    output_queue.put(player.get_command())
 
 
 class territory(pygame.sprite.Sprite):

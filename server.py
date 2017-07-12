@@ -91,14 +91,20 @@ def process_command(command):
     elif command[0] == "move":
         # When a move command is issued, create an expedition from src to dest,
         # and check every main loop iteration whether the expedition arrived.
-        src = territory_reference[command[1]]
+        sources = command[1]
         waypoints = command[2]
-        attacking_troops = command[3]
         pass_thru = command[4]
-        if attacking_troops > src.armies:
-            attacking_troops = src.armies
-        if attacking_troops > 0:
-            Expedition(src, waypoints, attacking_troops, src.owner, pass_thru)
+        for source in sources:
+            attacking_troops = command[3]
+            src = territory_reference[source]
+            print attacking_troops
+            if attacking_troops > src.armies:
+                attacking_troops = src.armies
+            print attacking_troops, "##"
+            if attacking_troops > 0:
+                print "creating expedition"
+                Expedition(src, waypoints, attacking_troops, src.owner,
+                           pass_thru)
 
 
 def get_commands(input_queue):
@@ -174,14 +180,16 @@ def create_connection(s):
 
 
 def check_cmd_valid(command, ID):
-    # print "received command:", command
+    print "checking received command:", command
     if command[0] == "move":
-        src = territory_reference[command[1]]
-        if src.owner == ID:
-            return True
-        else:
-            return False
+        for name in command[1]:
+            src = territory_reference[name]
+            if src.owner != ID:
+                return False
+                print "command not valid"
+        return True
     return False
+    print "command not valid"
 
 
 class receive_commands(threading.Thread):
@@ -420,10 +428,10 @@ class Expedition():
 
     def check_arrived(self):
         if time.time() > self.arrival_time:
-            # diff = time.time() - self.arrival_time
-            # if diff > 0.3:
-            #    raise Exception('Exceeded arrival time by ' + str(diff)
-            #                    + ' seconds')
+            diff = time.time() - self.arrival_time
+            if diff > 0.3:
+                raise Exception('Exceeded arrival time by ' + str(diff)
+                                + ' seconds')
             self.curr = self.next
             if territory_reference[self.curr].owner != self.owner:
                 self.do_battle()
