@@ -39,4 +39,7 @@ Start specified number of clients one for each player:
 - Ctrl-tab to switch between pass-through enemy territory mode and pass-through own territory modes
 - (deprecated) Number keys change quantity of armies moved
 
+# IMPORTANT
+- Server receive thread runs once every 0.1 seconds which means if you click too quickly then the clicks (move commands) simply won't be registered by the server. 
+
 *Note: The game quickly digresses into maniacal clicking*
