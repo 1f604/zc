@@ -23,8 +23,8 @@ Start a server:
 Start specified number of clients one for each player:
 
 - run "python client.py arg1 arg2"
-  - arg1 = port number same as server
-  - arg2 = host machines IP address
+  - arg1 = host machines IP address
+  - arg2 = port number same as server
 - ex.) "python client.py 127.0.0.1 5555" connects to local-host on port 5555
 
 *Note: Game only starts after all clients have connected*
@@ -40,6 +40,6 @@ Start specified number of clients one for each player:
 - (deprecated) Number keys change quantity of armies moved
 
 # IMPORTANT
-- Server receive thread runs once every 0.1 seconds which means if you click too quickly then the clicks (move commands) simply won't be registered by the server. 
+- Server receive thread runs once every 0.1 seconds which means if you click too quickly then the clicks (move commands) simply won't be registered by the server.
 
 *Note: The game quickly digresses into maniacal clicking*
