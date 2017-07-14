@@ -23,8 +23,8 @@ Start a server:
 Start specified number of clients one for each player:
 
 - run "python client.py arg1 arg2"
-  - arg1 = port number same as server
-  - arg2 = host machines IP address
+  - arg1 = host machines IP address
+  - arg2 = port number same as server
 - ex.) "python client.py 127.0.0.1 5555" connects to local-host on port 5555
 
 *Note: Game only starts after all clients have connected*
