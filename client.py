@@ -41,15 +41,15 @@ class receive_commands(threading.Thread):
         while True:
             command = message.recv_message(self.socket)
             if command != '':
-                print "receiving command"
-                print command
+                print("receiving command")
+                print(command)
                 try:
                     command = json.loads(command)
                 except Exception as e:
-                    print "&&&&&EXCEPTION"
+                    print("&&&&&EXCEPTION")
                     print(e)
-                    print command
-                print command
+                    print(command)
+                print(command)
                 input_queue.put(command)
 
 
@@ -104,7 +104,7 @@ def process_command():
             elif command[0] == 'expeditions':
                 update_expeditions(command)
             elif command[0] == 'end':
-                print "#####################received end command##############"
+                print("#####################received end command##############")
                 global end
                 end = True
 
@@ -146,7 +146,9 @@ def draw_paths():
             pygame.draw.lines(screen, ex[5], False, points, 1)
 
 
-def draw_cross(color, (x, y), width):
+def draw_cross(color, x_y, width):
+    x = x_y[0]
+    y = x_y[1]
     p0 = (x-3, y-3)
     p1 = (x+3, y+3)
     p2 = (x-3, y+3)
@@ -198,11 +200,11 @@ def main(screen):
                     sys.exit()
                 if ctrl:
                     setting_waypoints = True
-                    print setting_waypoints
+                    print(setting_waypoints)
             if event.type == pygame.KEYUP:
                 if not ctrl:
                     setting_waypoints = False
-                    print setting_waypoints
+                    print(setting_waypoints)
                     if waypoints:
                         move_zones(selecteds, waypoints, pass_thru)
                     waypoints = []
@@ -214,11 +216,11 @@ def main(screen):
 
             if keys[K_BACKQUOTE] and ctrl:
                 own_select = not own_select
-                print "territory select inverted"
+                print("territory select inverted")
 
             if keys[K_TAB] and ctrl:
                 pass_thru = not pass_thru
-                print "pass thru enemy territory inverted"
+                print("pass thru enemy territory inverted")
 
             if event.type == pygame.MOUSEBUTTONDOWN \
                     and not shift and buttons[2] and not setting_waypoints:

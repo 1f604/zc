@@ -10,7 +10,7 @@ def recv_bytes(socket, total_bytes):
   while current_bytes != total_bytes:
     log("recv_bytes", "Current bytes: " + str(current_bytes) + "Total bytes: " + str(total_bytes))
     new_text = socket.recv(total_bytes - current_bytes)
-    data_buffer = data_buffer + new_text
+    data_buffer = data_buffer + new_text.decode('utf-8')
     current_bytes = len(data_buffer)
   return data_buffer
 
@@ -34,7 +34,7 @@ def send_bytes(socket, data_buffer):
   #log('send_bytes', total_bytes)
   while sent_bytes < total_bytes:
     #log('send_bytes', "data_buffer: >" + data_buffer + "<")
-    sent = socket.send(data_buffer)
+    sent = socket.send(bytes(data_buffer, 'utf-8'))
     #log('send_bytes', "sent: " + str(sent))
     sent_bytes += sent
     #log('send_bytes', "sent_bytes: " + str(sent_bytes))
