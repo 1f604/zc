@@ -189,8 +189,8 @@ def check_cmd_valid(command, ID):
         for name in command[1]:
             src = territory_reference[name]
             if src.owner != ID:
-                return False
                 print("command not valid")
+                return False
         return True
     return False
     print("command not valid")

@@ -1,7 +1,13 @@
 import pygame
-import Queue
 import os
+import sys
 import colors
+is_py2 = sys.version[0] == '2'
+if is_py2:
+    import Queue as Queue
+else:
+    import queue as Queue
+
 pygame.init()
 
 # creates screeen#
@@ -35,8 +41,8 @@ def load_image(name, colorkey=None):
     fullname = os.path.join(filepath, name)
     try:
         image = pygame.image.load(fullname)
-    except pygame.error, message:
-        print 'Cannot load image:', name
+    except pygame.error as message:
+        print('Cannot load image:', name)
         raise SystemExit(message)
     image = image.convert()
     if colorkey is not None:
@@ -142,7 +148,7 @@ class territory(pygame.sprite.Sprite):
         territory_reference[self.name] = self
 
     def move(self, waypoints, pass_thru):
-        print "moving!"
+        print("moving!")
         player.build_command(self.name, waypoints, pass_thru)
         output_queue.put(player.get_command())
 
