@@ -1,4 +1,3 @@
-import Queue
 import threading
 import socket
 import sys
@@ -9,6 +8,11 @@ import message
 import collections
 import json
 import cProfile as profile
+is_py2 = sys.version[0] == '2'
+if is_py2:
+    import Queue as Queue
+else:
+    import queue as Queue
 
 refresh_rate = 0.1  # seconds per refresh
 running = True
@@ -17,7 +21,7 @@ expeditions = []  # ideally want a sorted {time:expedition} dictionary for this
 
 
 def log(location, message):
-    print location, message
+    print(location, message)
     pass
 
 
@@ -97,12 +101,12 @@ def process_command(command):
         for source in sources:
             attacking_troops = command[3]
             src = territory_reference[source]
-            print attacking_troops
+            print(attacking_troops)
             if attacking_troops > src.armies:
                 attacking_troops = src.armies
-            print attacking_troops, "##"
+            print(attacking_troops, "##")
             if attacking_troops > 0:
-                print "creating expedition"
+                print("creating expedition")
                 Expedition(src, waypoints, attacking_troops, src.owner,
                            pass_thru)
 
@@ -180,16 +184,16 @@ def create_connection(s):
 
 
 def check_cmd_valid(command, ID):
-    print "checking received command:", command
+    print("checking received command:", command)
     if command[0] == "move":
         for name in command[1]:
             src = territory_reference[name]
             if src.owner != ID:
                 return False
-                print "command not valid"
+                print("command not valid")
         return True
     return False
-    print "command not valid"
+    print("command not valid")
 
 
 class receive_commands(threading.Thread):
@@ -288,7 +292,9 @@ class update_quota(threading.Thread):
             self.input_queue.put(["update_quota"])
 
 
-def nearest_visible(owner, src, (x, y)):
+def nearest_visible(owner, src, x_y):
+    x = x_y[0]
+    y = x_y[1]
     # todo: implement fog of war
     src = territory_reference[src]
     nearest = src
@@ -384,22 +390,22 @@ class Expedition():
         es = [e for e in expeditions if e.curr == self.next
               and e.next == self.curr and e.owner != self.owner]
         for e in es:
-            print "fighting:", e, self
+            print("fighting:", e, self)
             diff = e.troops - self.troops
             if diff == 0:
                 expeditions.remove(e)
                 expeditions.remove(self)
-                print "both removed"
+                print("both removed")
                 return
             elif diff > 0:
                 expeditions.remove(self)
                 e.troops = diff
-                print e, "won", self, "removed"
+                print(e, "won", self, "removed")
                 return
             elif diff < 0:
                 expeditions.remove(e)
                 self.troops = -diff
-                print self, "won", e, "removed"
+                print(self, "won", e, "removed")
 
     def slow_me(self):
         new_dest = nearest_visible(self.owner, self.curr, self.waypoint)
@@ -442,8 +448,8 @@ class Expedition():
                     self.do_arrived()
 
     def do_battle(self):
-            print "expedition from", self.src.name, "to", \
-                  self.next, "arrived at", time.time()
+            print("expedition from", self.src.name, "to", \
+                  self.next, "arrived at", time.time())
             # do battle, set new army value on destination territory
             dest = territory_reference[self.curr]
             winner, troops = battle(self.owner, dest.owner,
@@ -575,7 +581,7 @@ for pair in level_info['Connections']:
     else:
         edges[pair[1]][pair[0]] = dist
 for key, value in edges.items():
-    print key, value
+    print(key, value)
 
 # do_server()
 
