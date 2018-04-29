@@ -1,6 +1,6 @@
 Based on [Real Time Risk by davidMcneil](https://github.com/davidMcneil/Real-Time-Risk)
 
-![Alt text](screenshot.png)
+![Alt text](video.gif)
 
 *Note: Must have python and pygame installed*
 
